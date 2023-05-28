@@ -1,0 +1,1 @@
+- Store mode mag alleen gebeuren na dat de privacy mode op staat.

@@ -1,0 +1,178 @@
+INF: Showing section: 'event_ima'
+INF: 
+INF: Read parameter:
+INF:   control?read&section=event_ima&<parameter>[&<parameter>]
+INF: 
+INF: Set parameter:
+INF:   control?set&section=event_ima&<parameter>=<value>[&<parameter>=<value>]
+INF: 
+INF: Special commands are available for some parameters.
+INF:   Available special commands are: toggle max min ++ -- +<n> -<n>
+INF:   Usage: <parameter>==<special command>
+#SECTION hardwaresetup
+#ENDSECTION hardwaresetup
+#SECTION eventdlite
+motionhideunused=0                      # 1, 0
+motionwintype=highlight                 # off, on, highlight, passiv
+motionwinid=1                           # 1, 0
+motionreftime=1                         # 0 .. 30000 
+motionnightoff=0                        # 0, 1, 3, 6, 10, 18, 32, 56
+motion_area=0,280,660,400,600,s=20,a=25,id=2,col=blue # (encoded string constant) 
+ima_as_fast_motion_stabilizer=0         # 1, 0
+ima_as_show_directions=0                # 1, 0
+ima_as_show_position=0                  # 1, 0
+ima_as_show_profile=                    # 
+ima_as_use_v2=0                         # 1, 0
+ima_as_use_perspective=0                # 1, 0
+ima_as_near_obj_size=@ @                # (string constant) 
+ima_as_far_obj_size=@ @                 # (string constant) 
+ima_as_min_obj_size=@ @                 # (string constant) 
+#-P motionhideunused "Hide Unused Windows": "1", "0"
+#-H motionhideunused "Video Motion Settings"
+#-E motionhideunused "If this box is checked, motion windows that are not used in any of the event profiles will not be displayed or evaluated."
+#-P motionwintype "Video Motion Style": "Off", "On and hide on event", "On and highlight on event", "Hide but highlight on event"
+#-E motionwintype "Appearance of motion window border."
+#-P motionwinid "Show Video Motion Window ID": "1", "0"
+#-E motionwinid "Display the ID in the upper left corner of each window."
+#-P motionreftime "Video Motion Suppression Time": 
+#-E motionreftime "Disable motion detection for this duration [0..30000ms] after a reference window has triggered.<br>Factory default: <i>0</i> (disables motion detection in current image only)."
+#-P motionnightoff "Low-Light Suppression": "Off", "0.1 lux", "0.3 lux", "0.6 lux", "1.0 lux", "1.8 lux", "3.2 lux", "5.6 lux"
+#-E motionnightoff "Disables motion detection if illumination drops below selected value. Can be set independently for each camera lens."
+#-P motion_area "Video Motion Definitions": 
+#-E motion_area "Format: lens, window<br>lens: 0=right, 1=left.<br>window: can be defined as a rectangle as well as a polygon.<br>For a detailed description of window definitions and additional variables, please refer to the <a href='/help/help?videomotion#VMWindowDefs' onclick='openExtNoDeko('/help/help?videomotion#VMWindowDefs',windowname_help); return false;' target='_blank'>help page</a>.<br><b>Note:</b> All user-defined coordinates are relative to the entire sensor area. The origin (0,0) corresponds to the lower left corner, (1279,959) to the upper right corner (if the image is <a href='general'>mirrored/rotated</a> the coordinate system changes accordingly).<br>"
+#-P ima_as_fast_motion_stabilizer "Detect Fast Motion": "1", "0"
+#-H ima_as_fast_motion_stabilizer "General MxActivitySensor Settings"
+#-E ima_as_fast_motion_stabilizer "Improve detection of fast objects. This could impair the detection of small objects."
+#-P ima_as_show_directions "Show Direction Indicator": "1", "0"
+#-E ima_as_show_directions "Show detected directions in the live image.<br></font><script type='text/javascript'> function asflash_all() { var cgitrick = new Image(); cgitrick.src = '/control/click.cgi?asflash=*'              + '&amp;dummy=' + Math.floor(Math.random()*1000000); } </script> <input class='mxFormButton' type='button' value='Highlight all areas' onclick='asflash_all();'><font>"
+#-P ima_as_show_position "Show Live Position Indicator": "1", "0"
+#-E ima_as_show_position "Show Position of detected directions in the live image."
+#-P ima_as_show_profile "Show Detection Area": "Off"
+#-E ima_as_show_profile "Show detection area of selected profile in the live image."
+#-P ima_as_use_v2 "MxActivitySensor 2.1": "1", "0"
+#-H ima_as_use_v2 "MxActivitySensor 2.1 Settings"
+#-E ima_as_use_v2 "MxActivitySensor 2.1 can detect moving objects depending on their individual size. Activating this option may reduce the maximum frame rate.<br></font><script type='text/javascript'> function as2flash() { var cgitrick = new Image(); cgitrick.src = '/control/click.cgi?as2flash=*'              + '&amp;dummy=' + Math.floor(Math.random()*1000000); } </script> <input class='mxFormButton' type='button' value='Highlight Object Sizes' onclick='as2flash();'><font>"
+#-P ima_as_use_perspective "Perspective Compensation": "1", "0"
+#-E ima_as_use_perspective "Enable perspective compensation of MxActivitySensor."
+#-P ima_as_near_obj_size "Near Object Size": 
+#-E ima_as_near_obj_size "Set size of objects that are closer to the camera."
+#-P ima_as_far_obj_size "Far Object Size": 
+#-E ima_as_far_obj_size "Set size of objects that are farther away from the camera."
+#-P ima_as_min_obj_size "Minimum Object Size": 
+#-E ima_as_min_obj_size "Use this parameter to avoid alarms triggered by small objects."
+#ENDSECTION eventdlite
+#SECTION videomotionanalysis
+vma_main_direction=12                   # 1 .. 12 
+vma_show_alarm_icons=0                  # 1, 0
+vma_show_speed=0                        # 1, 0
+vma_sharedconf_editdef_check=0          # 1, 0
+vma_low_light=100                       # 0, 50, 100, 150, 200
+vma_height=250                          # 150 .. 1000 
+vma_pitch=-90                           # -90 .. 90 
+vma_detection_size_min=2000             # 250 .. 250000 
+vma_mode=heavy                          # constant, sparse, heavy, custom
+vma_method=stable                       # stable, slow, fast
+vma_shadow=                             # edge, histo
+vma_shadow_level=1                      # 1, 2, 3
+vma_sensitivity=13                      # 1 .. 100 
+vma_counting_corridors=0,start=800x440,end=800x520,width=360,id=1,name=Corridor+1 # (encoded string constant) 
+vma_corridor_vis=highlight              # off, on, hide, highlight, passive
+vma_corridor_color=0x0000FF             # 0x000000, 0x800000, 0x008000, 0x808000, 0x000080, 0x800080, 0x008080, 0x808080, 0xC0C0C0, 0xFF0000, 0x00FF00, 0xFFFF00, 0x0000FF, 0xFF00FF, 0x00FFFF, 0xFFFFFF
+vma_text_color=0xFFFFFF                 # 0x000000, 0x800000, 0x008000, 0x808000, 0x000080, 0x800080, 0x008080, 0x808080, 0xC0C0C0, 0xFF0000, 0x00FF00, 0xFFFF00, 0x0000FF, 0xFF00FF, 0x00FFFF, 0xFFFFFF
+vma_show_ids=1                          # 1, 0
+#-P vma_main_direction "Main direction": 
+#-H vma_main_direction "Behavioral Detection"
+#-E vma_main_direction "Triggers an alarm, if an object moves opposite to the main direction. <em>Only available for ceiling-mounted cameras!</em>"
+#-P vma_show_alarm_icons "Alarm Visualization": "1", "0"
+#-E vma_show_alarm_icons "Visualize Behavioral Detection events using icons. <em>Only available for ceiling-mounted cameras!</em>"
+#-P vma_show_speed "Object Speed": "1", "0"
+#-E vma_show_speed "The current speed will be shown below the recognized objects. <em>Only available for ceiling-mounted cameras!</em>"
+#-P vma_sharedconf_editdef_check "MxAnalytics shared configuration": "1", "0"
+#-H vma_sharedconf_editdef_check "Edit shared configuration of MxAnalytics"
+#-E vma_sharedconf_editdef_check "MxAnalytics and Behavioral Detection share several configurations like Counting Corridors or Arming"
+#-P vma_low_light "Low-Light Suppression": "Off", "5 lux", "10 lux", "15 lux", "20 lux"
+#-H vma_low_light "Arming"
+#-E vma_low_light "Disable analysis if illumination drops below selected value."
+#-P vma_height "Mounting Height": 
+#-H vma_height "Mounting Height"
+#-E vma_height "Mounting height of the camera [150..1000 cm]."
+#-P vma_pitch "Tilt Angle": 
+#-H vma_pitch "Tilt Angle"
+#-E vma_pitch "Configure the tilt angle of the camera in degrees [−90&deg;..90&deg;]. Installation on/in the ceiling corresponds to −90&deg;, installation on/in the wall corresponds to 0&deg;."
+#-P vma_detection_size_min "Minimum Object Size": 
+#-H vma_detection_size_min "Minimum Object Size"
+#-E vma_detection_size_min "Minimum size of objects in pixels [250..250000]. The size can also be defined by setting a rectangle inside the outline of the object to be detected.<br><br><b>The minimum object size can also be defined by Shift-click+click in the live image and pressing <i>Set minimum object size</i>.</b><br>"
+#-P vma_mode "Light and Shadow": "Artificial light, no shadows", "Sparse sunlight, blurred shadows", "Heavy sunlight, well-defined shadows", "Custom setup"
+#-H vma_mode "Light and Shadow"
+#-E vma_mode "The quality of the analysis depends on the light and shadow conditions in the detection areas. Select one of the predefined setups or configure a custom setup."
+#-P vma_method "Illumination Conditions": "Constant illumination", "Slowly changing illumination", "Fast changing illumination"
+#-E vma_method "The quality of the analysis also depends on how illumination changes. Note that 'Constant illumination' and 'Slowly changing illumination' allow further adjustment of shadow detection."
+#-P vma_shadow "Shadow Detection": "Coarse structure/dark background", "Fine structure/light background"
+#-E vma_shadow "Depending on the light and shadow conditions, shadow detection can be adjusted further."
+#-P vma_shadow_level "Shadow Detection Sensitivity": "Low", "Medium", "High"
+#-E vma_shadow_level "Set the level of sensitivity for shadow detection on fine structures or light background."
+#-P vma_sensitivity "Detection Sensitivity": 
+#-H vma_sensitivity "Sensitivity"
+#-E vma_sensitivity "The higher the value, the greater the difference between the object and the background has to be in order to be detected [1..100]. This option has no effect when using the 'Heavy sunlight, well-defined shadows' or the 'Fast changing illumination' settings."
+#-P vma_counting_corridors "Configure counting corridors": 
+#-H vma_counting_corridors "Counting Corridors"
+#-E vma_counting_corridors "Format: lens,start=<i>point</i>,end=<i>point</i>,width=<i>width</i><br>lens: 0=right, 1=left.<br>start: starting point of corridor (direction).<br>end: ending point of corridor (direction).<br>point: <i>x coordinate</i> x <i>y coordinate</i>.<br>width: width of the corridor.<br>For a detailed description of corridor definitions and additional variables, please refer to the <a href='/help/help?videomotionanalysis#CountingCorridorSettings' onclick='openExtNoDeko('/help/help?videomotionanalysis#CountingCorridorSettings',windowname_help); return false;' target='_blank'>help page</a>."
+#-P vma_corridor_vis "Alarm and Counting Corridor Style": "Off", "On", "On and hide on counting", "On and highlight on counting", "Hide but highlight on counting"
+#-H vma_corridor_vis "Alarm and Counting Corridors"
+#-E vma_corridor_vis "Appearance of alarm and counting corridor."
+#-P vma_corridor_color "Counting Corridor Color": "Black", "Maroon", "Green", "Olive", "Navy", "Purple", "Teal", "Gray", "Silver", "Red", "Lime", "Yellow", "Blue", "Fuchsia", "Aqua", "White"
+#-E vma_corridor_color "Select color used for the counting corridors. A corridor is highlighted using the complementary color."
+#-P vma_text_color "Text Color": "Black", "Maroon", "Green", "Olive", "Navy", "Purple", "Teal", "Gray", "Silver", "Red", "Lime", "Yellow", "Blue", "Fuchsia", "Aqua", "White"
+#-E vma_text_color "Select color used for the corridor IDs."
+#-P vma_show_ids "Counting Corridor IDs": "1", "0"
+#-E vma_show_ids "The corridor IDs will be shown at the bottom of each corridor."
+#ENDSECTION videomotionanalysis
+#SECTION events
+#PROFILE ima 
+#-W ima:ima_dead 0 .. 3600 
+#-P ima:ima_dead "Event Dead Time": 
+#-E ima:ima_dead "Time to wait [0..3600 s] before the event can trigger anew."
+#-W ima:ima_sens ot, as, vm
+#-P ima:ima_sens "Event Sensor Type": "Behavioral Detection", "MxActivitySensor", "Video Motion"
+#-H ima:ima_sens "Event Sensor Type"
+#-E ima:ima_sens "Choose the image analysis sensor."
+#-W ima:activity_level 0 .. 99 
+#-P ima:activity_level "Set Detection Threshold": 
+#-E ima:activity_level "Choose detection threshold for this profile [0..99]."
+#-W ima:activity_area (encoded string constant) 
+#-P ima:activity_area "Edit Detection Area": 
+#-E ima:activity_area "For a detailed description of window definitions and additional variables, please refer to the <a href='/help/help?activitysensor#AreaDefinition' onclick='openExtNoDeko('/help/help?activitysensor#AreaDefinition',windowname_help); return false;' target='_blank'>help page</a>.<br><br><b>Detection areas can also be defined by Shift-click+click in the live image and pressing <i>Add Rectangle</i>.</b><br><!--Highlight area-->"
+#-W ima:activity_directions Left, Right, Up, Down
+#-P ima:activity_directions "Select Direction Triggers": "Left", "Right", "Up", "Down"
+#-E ima:activity_directions "Choose directions which cause an alarm."
+#-W ima:ot_type corridor, time, wrong, uturn, turn, speed, restricted
+#-P ima:ot_type "Alarm Type": "Corridor", "Duration of stay", "Opposite Direction", "U-Turn", "Turn", "Speed", "Restricted Area"
+#-E ima:ot_type "Select the alarm type."
+#-W ima:ot_corridor_list (string constant) 
+#-P ima:ot_corridor_list "Corridor List": 
+#-E ima:ot_corridor_list "List corridors (by their ID). If one of the listed corridors is crossed by an object, this event is triggered. Entries are separated by commas, and can consist of single corridors or ranges (e.g. '1,2,4-7'). The ranges can be open ('3-' or '-4'). Leaving this field empty selects all corridors."
+#-W ima:ot_time_value 1 .. 300 
+#-P ima:ot_time_value "Maximum Abidance Time": 
+#-E ima:ot_time_value "Set the maximum abidance time [1..300 s]."
+#-W ima:ot_speed_value 1 .. 6 
+#-P ima:ot_speed_value "Speed threshold": 
+#-E ima:ot_speed_value "Set the speed threshold in [1..6] m/s. Alarm will trigger if an object moves faster than the threshold speed."
+#-W ima:ot_restricted_area (string constant) 
+#-P ima:ot_restricted_area "Edit Restricted Area": 
+#-E ima:ot_restricted_area "For a detailed description of window definitions and additional variables, please refer to the <a href='/help/help?behavioraldetection#RestrictedAreaDefinition' onclick='openExtNoDeko('/help/help?behavioraldetection#RestrictedAreaDefinition',windowname_help); return false;' target='_blank'>help page</a>.<br><br><b>Restricted areas can also be defined by Shift-click+click in the live image and pressing <i>Add Rectangle</i>.</b><br>"
+#-W ima:ot_restricted_area_color off, 0x000000, 0x800000, 0x008000, 0x808000, 0x000080, 0x800080, 0x008080, 0x808080, 0xC0C0C0, 0xFF0000, 0x00FF00, 0xFFFF00, 0x0000FF, 0xFF00FF, 0x00FFFF, 0xFFFFFF
+#-P ima:ot_restricted_area_color "Restricted Area Color": "Off", "Black", "Maroon", "Green", "Olive", "Navy", "Purple", "Teal", "Gray", "Silver", "Red", "Lime", "Yellow", "Blue", "Fuchsia", "Aqua", "White"
+#-E ima:ot_restricted_area_color "Select color used for the restricted area."
+#-W ima:ot_restricted_area_transparency 0 .. 100 
+#-P ima:ot_restricted_area_transparency "Restricted Area Transparency": 
+#-E ima:ot_restricted_area_transparency "Select transparency used for the restricted area."
+#-W ima:vm_list (string constant) 
+#-P ima:vm_list "Window List": 
+#-E ima:vm_list "List VM windows (by their ID). If one of the listed windows detects motion, this event is triggered. Entries are separated by commas, and can consist of single windows or ranges (e.g. '1,2,4-7'). The ranges can be open ('3-' or '-4'). Leaving this field empty selects all windows.<!--Highlight selected-->"
+ima=VM:_profilename=BED:ima_dead=5:ima_sens=vm:activity_level=33:activity_area=0,0,0,1280,960:activity_directions=Left;Right;Up;Down:ot_type=corridor:ot_corridor_list=:ot_time_value=30:ot_speed_value=4:ot_restricted_area=0,0,0,1280,960:ot_restricted_area_color=0xFFFF00:ot_restricted_area_transparency=70:vm_list=1 # (profile string constant) 
+ima=VM2:_profilename=DEUR:ima_dead=5:ima_sens=vm:activity_level=33:activity_area=0,0,0,1280,960:activity_directions=Left;Right;Up;Down:ot_type=corridor:ot_corridor_list=:ot_time_value=30:ot_speed_value=4:ot_restricted_area=0,0,0,1280,960:ot_restricted_area_color=0xFFFF00:ot_restricted_area_transparency=70:vm_list=2 # (profile string constant) 
+ima=AS:_profilename=TAFEL:ima_dead=5:ima_sens=vm:activity_level=33:activity_area=0,0,0,1280,960:activity_directions=Left;Right;Up;Down:ot_type=corridor:ot_corridor_list=:ot_time_value=30:ot_speed_value=4:ot_restricted_area=0,0,0,1280,960:ot_restricted_area_color=0xFFFF00:ot_restricted_area_transparency=70:vm_list=3 # (profile string constant) 
+ima=ima_63dce9e3:_profilename=STOEL:ima_dead=5:ima_sens=vm:activity_level=33:activity_area=:activity_directions=Left;Right;Up;Down:ot_type=corridor:ot_corridor_list=:ot_time_value=30:ot_speed_value=4:ot_restricted_area=0,0,0,1280,960:ot_restricted_area_color=0xFFFF00:ot_restricted_area_transparency=70:vm_list=4 # (profile string constant) 
+#-P ima "": 
+#ENDSECTION events
+

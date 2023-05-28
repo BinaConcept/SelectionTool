@@ -1,0 +1,15 @@
+Mobotix ip
+http://192.168.24.110/ 
+
+Mobotix admin menu
+user: admin
+password: meinsm123
+
+Tool voor Mobotix
+http://slimmesensor.deltatechnics.be/
+
+General Mobotix api call(setup)
+mobotix http api: http://<IP>/help/help?cgi-remotecontrol#cgi-remotecontrol
+
+Remote Mobotix api call (admin)
+mobotix remote api: http://<IP>/help/help?cgi-remoteconfig
