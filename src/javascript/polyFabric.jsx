@@ -9,19 +9,27 @@ import React, {
 	forwardRef,
 	useImperativeHandle,
 	useParams,
+	useCallback,
 } from 'react';
 import { fabric } from 'fabric';
 import { Button } from '../atomic/molecules/button';
 import axios from 'axios';
+import adminService from '../service/adminService';
+import { toast } from 'react-toastify';
 
 export const PolyFabric = forwardRef((props, ref) => {
 	const [obj, setobj] = useState([]);
 	const data = [0, 0, 0, 0, 0];
+	const objList = useRef([]);
 	const polygonLine = [];
 	const circle = [];
+
 	let selectedItem;
-	let refy = useRef(0);
+	let refy = useRef(1);
+
+	const [show, showList] = useState(false);
 	const [display, setDisplay] = useState(false);
+	let visibility = useRef(true);
 
 	const [objectDetection, setObjectDetection] = useState([
 		{
@@ -30,17 +38,21 @@ export const PolyFabric = forwardRef((props, ref) => {
 			polygon: [],
 		},
 	]);
-	const objList = useRef([]);
+
 	const createObject = (objData) => {
+		let selectIndx = objData.selectedIndex;
+
 		var answer = window.confirm(
-			'Ben je zeker dat je object wilt toevoegen met de id',
-			objData.selectedIndex
+			`Ben je zeker dat je object wilt toevoegen met de id ${selectIndx}`
 		);
 
 		if (answer) {
 			const newItems = [
 				{
-					id: objectDetection.length + 1,
+					id:
+						objectDetection.length > 1
+							? objectDetection[objectDetection.length - 2].id + 1
+							: objectDetection[0].id + 1,
 					selected: objData.selectedIndex,
 					polygon: [],
 				},
@@ -49,15 +61,15 @@ export const PolyFabric = forwardRef((props, ref) => {
 			objList.current = newItems;
 			newItems.sort((a, b) => (b.id !== 0 ? a.id - b.id : null));
 			setObjectDetection(newItems);
-			refy.current = objectDetection.length;
-			console.log('Create', objectDetection);
+			refy.current = objectDetection.length - 1;
 		}
 	};
+
 	const deleteObject = (index) => {
 		setObjectDetection(objectDetection.filter((item, i) => i !== index));
-		refy.current =
-			refy.current === 2 ? refy.current - 3 : objectDetection.length;
+		refy.current = refy.current - 1;
 	};
+
 	const editObject = (i, objData) => {
 		const updatedArray = [
 			...objectDetection.slice(0, i),
@@ -71,86 +83,176 @@ export const PolyFabric = forwardRef((props, ref) => {
 		setObjectDetection(updatedArray);
 	};
 
+	useEffect(() => {
+		if (show === true && props.imageLoading === false) {
+			setObjectDetection((dt) => [
+				...objectDetection.slice(
+					objectDetection.length - 1,
+					objectDetection.length,
+					setobj([])
+				),
+			]);
+		}
+	}, [props.imageLoading, show]);
+
+	const hid = () => {
+		let status = display === false ? 'disable' : 'enable';
+		setDisplay(status === 'disable' ? true : false);
+		adminService.getDisplayBlock(props.cameraIp, status).then((response) => {
+			toast.success('Privacy mode');
+			visibility.current = status === 'disable' ? true : false;
+			handleSubmit(visibility);
+		});
+	};
+
 	useImperativeHandle(ref, () => ({
-		async enableDisable() {
-			let status = display === false ? 'disable' : 'enable';
-			setDisplay(status === 'disable' ? true : false);
-			console.log('enableDisable', status);
-
-			const url = `http://${props.cameraIp}/admin/control?set&section=logo&display=disable`;
-
-			var base64encodedData = Buffer.from('admin:meinsm123').toString('base64');
-
-			const response = await axios.get('http://192.168.24.115/admin/control', {
-				params: {
-					section: 'logo',
-					admin: 'null',
-					set: 'null',
-					display: 'enable',
-				},
-				headers: {
-					Authorization: 'Basic YWRtaW46bWVpbnNtMTIz',
-				},
-			});
+		enableDisable() {
+			hid();
 		},
 
 		store() {
-			let url = `http://${props.cameraIp}/admin/rcontrol?action=storeconfig`;
-			axios
-				.get(url)
-				.then((response) => {})
-				.catch((error) => {
-					console.log(error);
-				});
-
-			console.log('opsla');
+			adminService.getStore(props.cameraIp).then((response) => {
+				toast.success('Gegevens zijn permanent opgeslagen');
+				hid();
+			});
 		},
 	}));
 
-	useEffect(() => {
-		if (props.imageLoading) {
-			const url = `http://${props.cameraIp}/control/control?read&section=event_ima&ima`;
-			axios
-				.get(url)
-				.then((response) => {
-					const txt = response.data;
-					const reTx = txt.replace(/:/g, ' ');
-					const spTx1 = reTx.split('ima=');
-					obj.length = 0;
-					setobj([
-						...obj,
-						{
-							id: 0,
-							name: 'Kies object',
-						},
-					]);
-					for (let i = 1; i < spTx1.length + 1; i++) {
-						if (spTx1[i - 1].indexOf('_profilename') > -1) {
-							let nuberP = spTx1[i - 1].indexOf('_profilename');
-							let nuberL = spTx1[i - 1].indexOf('vm_list');
-							let subL = spTx1[i - 1].substring(nuberL + 8);
-							let reL = subL.replace(/\n/g, '');
+	const createMotionList = (m) => {
+		const reTx = m.data.replace(/:/g, ' ');
+		const spTx1 = reTx.split('ima=');
+		obj.length = 0;
+		setobj([
+			...obj,
+			{
+				id: 0,
+				name: 'Kies object',
+			},
+		]);
+		for (let i = 1; i < spTx1.length + 1; i++) {
+			if (spTx1[i - 1].indexOf('_profilename') > -1) {
+				let nuberP = spTx1[i - 1].indexOf('_profilename');
+				let nuberL = spTx1[i - 1].indexOf('vm_list');
+				let subL = spTx1[i - 1].substring(nuberL + 8);
+				let reL = subL.replace(/\n/g, '');
 
-							setobj((objData) => [
-								...objData,
-								{
-									id: i - 1,
-									name: spTx1[i - 1].substring(
-										nuberP + 13,
-										spTx1[i - 1].indexOf('ima_dead')
-									),
-									value: parseInt(reL),
-								},
-							]);
-						}
-					}
-				})
-				.catch((error) => {
-					console.log(error);
-				});
+				setobj((objData) => [
+					...objData,
+					{
+						id: i - 1,
+						name: spTx1[i - 1].substring(
+							nuberP + 13,
+							spTx1[i - 1].indexOf('ima_dead')
+						),
+						value: parseInt(reL),
+					},
+				]);
+			}
 		}
-		console.log('loading drop downlist');
-	}, []);
+	};
+
+	useEffect(() => {
+		let polyList;
+		let offsetX = 86;
+		let offsetX1 = 785 / 1152;
+		let offsetY = 941;
+		let offsetY1 = 565 / 941;
+		if (props.imageLoading) {
+			showList(true);
+			adminService
+				.getMotions(props.cameraIp)
+				.then(
+					(res) => createMotionList(res),
+					toast.success('Success verbinding')
+				);
+			adminService.getLoadingCameraData(props.cameraIp).then((res) => {
+				const reTx = res.data.replace(/\n/gi, '');
+				const reTx1 = reTx.replace(/x/gi, ',');
+				const reTx2 = reTx1.replace(/\//gi, ',');
+				const spTx1 = reTx2.split(/%0A/g);
+				let value = spTx1.slice(3, spTx1.length);
+
+				value.map((valData, i) => {
+					let calSplit = valData.slice(2).split(/,/g);
+					let id = calSplit[calSplit.length - 1].replace(/id=/g, '');
+
+					if (calSplit[0].substring(0, 5) === 'poly=') {
+						const reTx = calSplit[0].replace(/poly=/gi, '');
+						calSplit[0] = reTx;
+						const arrPoly = [];
+
+						for (let i = 0; i < calSplit.length - 3; i += 2) {
+							arrPoly.push({
+								x: (parseInt(calSplit[i]) - offsetX) * offsetX1,
+								y: parseInt((offsetY - calSplit[i + 1]) * offsetY1),
+							});
+						}
+						setObjectDetection((dt) => [
+							{
+								id: objectDetection.length + 1,
+								selected: id,
+								polygon: arrPoly,
+							},
+							...dt,
+						]);
+					} else {
+						setObjectDetection((dt) => [
+							{
+								id: objectDetection.length + 1,
+								selected: id,
+								polygon: [
+									{
+										x: parseInt((parseInt(calSplit[0]) - offsetX) * offsetX1),
+										y: parseInt(
+											(offsetY -
+												parseInt(
+													parseInt(calSplit[1]) + parseInt(calSplit[3])
+												)) *
+												offsetY1
+										),
+									},
+									{
+										x: parseInt(
+											(parseInt(calSplit[0]) +
+												parseInt(calSplit[2]) -
+												offsetX) *
+												offsetX1
+										),
+										y: parseInt(
+											(offsetY -
+												parseInt(
+													parseInt(calSplit[1]) + parseInt(calSplit[3])
+												)) *
+												offsetY1
+										),
+									},
+									{
+										x: parseInt(
+											(parseInt(calSplit[0]) +
+												parseInt(calSplit[2]) -
+												offsetX) *
+												offsetX1
+										),
+										y: parseInt(
+											(offsetY - parseInt(parseInt(calSplit[1]))) * offsetY1
+										),
+									},
+									{
+										x: parseInt((parseInt(calSplit[0]) - offsetX) * offsetX1),
+										y: parseInt(
+											(offsetY - parseInt(parseInt(calSplit[1]))) * offsetY1
+										),
+									},
+								],
+							},
+							...dt,
+						]);
+						refy.current = i + 1;
+					}
+				});
+			});
+		}
+	}, [props.imageLoading]);
 
 	const objectList = obj.map((data, i) => {
 		return (
@@ -191,17 +293,21 @@ export const PolyFabric = forwardRef((props, ref) => {
 		if (sendObject.length === undefined) {
 			sendData += `$noiseadjust=1%0A$postfilter=1%0A$limit=100%0A0,poly=${send(
 				sendObject
-			)},a=5,am=90,s=0,id=${sendObject.id}%0A`;
+			)},s=0,a=5,id=${sendObject.id}`;
 		} else {
 			sendObject.map((data, i) => {
 				if (data.id !== 0) {
-					sendData += `$noiseadjust=1%0A$postfilter=1%0A$limit=100%0A0,poly=${send(
-						data
-					)},a=5,am=90,s=0,id=${data.id}%0A`;
+					if (i === 0) {
+						sendData += `$noiseadjust=1%0A$postfilter=1%0A$limit=100%0A0,poly=${send(
+							data
+						)},a=5,am=90,s=0,id=${data.id}%0A`;
+					} else {
+						sendData += `0,poly=${send(data)},a=5,am=90,s=0,id=${data.id}%0A`;
+					}
 				}
 			});
 		}
-		const url = `http://${props.cameraIp}/control/control?set&section=eventcontrol&motion_area=motion_area=${sendData}`;
+		const url = `http://${props.cameraIp}/control/control?set&section=eventcontrol&motion_area=${sendData}`;
 		const data = {
 			username: 'admin',
 			password: 'meinsm123',
@@ -213,6 +319,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 				console.log(error);
 			});
 	};
+
 	const addObjectDetection = () => {
 		if (objectDetection) {
 			const obDetect = () =>
@@ -292,17 +399,16 @@ export const PolyFabric = forwardRef((props, ref) => {
 			return obDetect();
 		}
 	};
-	useEffect(() => {
+
+	const handleSubmit = useCallback((setPrivacy) => {
+		var canvas = new fabric.Canvas('c');
 		let canvasW = 750;
 		let canvasH = 550;
-
-		var canvas = new fabric.Canvas('c');
 		canvas.setWidth(canvasW);
 		canvas.setHeight(canvasH);
 
 		canvas.on('object:moving', (e) => {
 			var p = e.target;
-
 			objList.current[p.parentId].polygon[p.id] = {
 				x: p.getCenterPoint().x,
 				y: p.getCenterPoint().y,
@@ -332,7 +438,8 @@ export const PolyFabric = forwardRef((props, ref) => {
 		canvas.on('mouse:down', (e) => {
 			let _left = e.pointer.x;
 			let _top = e.pointer.y;
-			if (refy.current > 0 && data[0] === 0) {
+
+			if (objList.current.length > 1 && data[0] === 0) {
 				const newPolygon = {
 					...objList.current,
 					...objList.current[refy.current - 1].polygon.push({
@@ -370,10 +477,10 @@ export const PolyFabric = forwardRef((props, ref) => {
 				}
 			}
 		);
-
 		const node = () => {
 			objList.current.map((dataPoint, a) => {
 				const options = {
+					visible: visibility.current | false,
 					objectCaching: false,
 					fill: '	rgb(255,0,0,0.7)',
 					stroke: 'rgb(255,0,0,0.2)',
@@ -388,6 +495,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 
 				dataPoint.polygon.map((point, b) => {
 					circle[b] = new fabric.Circle({
+						visible: visibility.current | false,
 						radius: 5,
 						fill: 'white',
 						stroke: 'red',
@@ -407,6 +515,10 @@ export const PolyFabric = forwardRef((props, ref) => {
 			});
 		};
 		node();
+	}, []);
+
+	useEffect(() => {
+		handleSubmit();
 	}, [objectDetection]);
 
 	return <>{addObjectDetection()}</>;

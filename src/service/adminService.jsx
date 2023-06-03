@@ -8,15 +8,12 @@ const authorization = {
 
 class AdminService {
 	//Event Overview
+
 	getMotions(ip) {
-		axios
+		return axios
 			.get(
-				`http://${ip}/control/control?read&section=event_ima&ima`,
-				authorization
+				`http://${authorization.username}:${authorization.password}@${ip}/control/control?read&section=event_ima&ima`
 			)
-			.then((response) => {
-				return response;
-			})
 			.catch((error) => {
 				console.log(error);
 			});
@@ -26,8 +23,7 @@ class AdminService {
 	createMotionLine(ip, motion) {
 		axios
 			.get(
-				`http://${ip}/control/control?set&section=eventcontrol&motion_area=${motion}`,
-				authorization
+				`http://${authorization.username}:${authorization.password}@${ip}/control/control?set&section=eventcontrol&motion_area=${motion}`
 			)
 			.then((response) => {
 				return response;
@@ -38,14 +34,10 @@ class AdminService {
 	}
 	// Display mode
 	getDisplayBlock(ip, display) {
-		axios
+		return axios
 			.get(
-				`http://${ip}/admin/control?set&section=logo&display=${display}`,
-				authorization
+				`http://${authorization.username}:${authorization.password}@${ip}/admin/control?set&section=logo&display=${display}`
 			)
-			.then((response) => {
-				return response;
-			})
 			.catch((error) => {
 				console.log(error);
 			});
@@ -53,15 +45,27 @@ class AdminService {
 
 	//Configuration store
 	getStore(ip) {
-		axios
-			.get(`http://${ip}/admin/rcontrol?action=storeconfig`, authorization)
-			.then((response) => {
-				return response;
-			})
+		return axios
+			.get(
+				`http://${authorization.username}:${authorization.password}@${ip}/admin/rcontrol?action=storeconfig`
+			)
+
+			.catch((error) => {
+				console.log(error);
+			});
+	}
+
+	//Configuration store
+	getLoadingCameraData(ip) {
+		return axios
+			.get(
+				`http://${authorization.username}:${authorization.password}@${ip}/control/control?read&section=eventcontrol&motion_area`
+			)
 			.catch((error) => {
 				console.log(error);
 			});
 	}
 }
 
+// eslint-disable-next-line import/no-anonymous-default-export
 export default new AdminService();

@@ -4,14 +4,15 @@ import './App.css';
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from './atomic/molecules/button';
 import { EyesIcone } from './atomic/atoms/eyesIcone';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 // import { DetectionNavbar } from './atomic/organisms/detectionNavbar';
 
 import { PolyFabric } from './javascript/polyFabric';
-// import { PolyFabric } from './javascript/polyFabric';
-
 function App(props, { removeObject }) {
 	const [ip, setIp] = useState('0.0.0.0');
 	const [loaded, setLoaded] = useState(false);
+
 	const childRef = useRef();
 	const camera = () => {
 		return (
@@ -21,6 +22,7 @@ function App(props, { removeObject }) {
 						id="eyes"
 						className="btn-secondary p-2"
 						onClick={() => childRef.current.enableDisable()}
+						disabled={!loaded}
 					>
 						<EyesIcone
 							className="ml-5"
@@ -44,6 +46,7 @@ function App(props, { removeObject }) {
 						// src={require('../src/assets/room1.jpg')}
 						alt=""
 						onLoad={() => setLoaded(true)}
+						onError={() => setLoaded(false)}
 					/>
 
 					<canvas id="c"></canvas>
@@ -52,6 +55,7 @@ function App(props, { removeObject }) {
 					type="button"
 					className="btn btn-warning w-100 mt-4 mb-2"
 					onClick={() => childRef.current.store()}
+					disabled={!loaded}
 				>
 					STORE
 				</button>
@@ -84,7 +88,12 @@ function App(props, { removeObject }) {
 				</div>
 
 				<div className="col-lg-5">
-					<PolyFabric ref={childRef} cameraIp={ip} imageLoading={loaded}></PolyFabric>
+					<ToastContainer />
+					<PolyFabric
+						ref={childRef}
+						cameraIp={ip}
+						imageLoading={loaded}
+					></PolyFabric>
 				</div>
 			</div>
 		</div>
