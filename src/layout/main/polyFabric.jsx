@@ -12,25 +12,31 @@ import React, {
 	useCallback,
 } from 'react';
 import { fabric } from 'fabric';
-import { Button } from '../atomic/molecules/button';
+import { Button } from '../../atomic/molecules/button';
 import axios from 'axios';
-import adminService from '../service/adminService';
+import adminService from '../../service/adminService';
 import { toast } from 'react-toastify';
 
 export const PolyFabric = forwardRef((props, ref) => {
+	// useState
 	const [obj, setobj] = useState([]);
-	const data = [0, 0, 0, 0, 0];
+	const [show, showList] = useState(false);
+	const [display, setDisplay] = useState(false);
+
+	// useRef
+	let visibility = useRef(true);
 	const objList = useRef([]);
+	let refy = useRef(1);
+
+	// array
+	const data = [0, 0, 0, 0, 0];
 	const polygonLine = [];
 	const circle = [];
 
+	// variable
 	let selectedItem;
-	let refy = useRef(1);
 
-	const [show, showList] = useState(false);
-	const [display, setDisplay] = useState(false);
-	let visibility = useRef(true);
-
+	// First objectdetection array
 	const [objectDetection, setObjectDetection] = useState([
 		{
 			id: 0,
@@ -39,6 +45,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 		},
 	]);
 
+	// Create objectdetection
 	const createObject = (objData) => {
 		let selectIndx = objData.selectedIndex;
 
@@ -65,11 +72,13 @@ export const PolyFabric = forwardRef((props, ref) => {
 		}
 	};
 
+	// Delete objectdetection
 	const deleteObject = (index) => {
 		setObjectDetection(objectDetection.filter((item, i) => i !== index));
 		refy.current = refy.current - 1;
 	};
 
+	// Edit objectdetection
 	const editObject = (i, objData) => {
 		const updatedArray = [
 			...objectDetection.slice(0, i),
@@ -83,6 +92,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 		setObjectDetection(updatedArray);
 	};
 
+	// Check loading camera image
 	useEffect(() => {
 		if (show === true && props.imageLoading === false) {
 			setObjectDetection((dt) => [
@@ -95,6 +105,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 		}
 	}, [props.imageLoading, show]);
 
+	// Set privacymode disable-enable
 	const hid = () => {
 		let status = display === false ? 'disable' : 'enable';
 		setDisplay(status === 'disable' ? true : false);
@@ -105,11 +116,12 @@ export const PolyFabric = forwardRef((props, ref) => {
 		});
 	};
 
+	// Event others component
 	useImperativeHandle(ref, () => ({
 		enableDisable() {
 			hid();
 		},
-
+		// Toast message
 		store() {
 			adminService.getStore(props.cameraIp).then((response) => {
 				toast.success('Gegevens zijn permanent opgeslagen');
@@ -118,9 +130,13 @@ export const PolyFabric = forwardRef((props, ref) => {
 		},
 	}));
 
+	// Loading motionlist from camera
 	const createMotionList = (m) => {
 		const reTx = m.data.replace(/:/g, ' ');
-		const spTx1 = reTx.split('ima=');
+		const value = reTx.split('ima=');
+
+		let spTx1 = value.slice(1, value.length);
+
 		obj.length = 0;
 		setobj([
 			...obj,
@@ -151,6 +167,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 		}
 	};
 
+	// Loading objectdetection list from camera
 	useEffect(() => {
 		let polyList;
 		let offsetX = 86;
@@ -175,21 +192,23 @@ export const PolyFabric = forwardRef((props, ref) => {
 				value.map((valData, i) => {
 					let calSplit = valData.slice(2).split(/,/g);
 					let id = calSplit[calSplit.length - 1].replace(/id=/g, '');
-
 					if (calSplit[0].substring(0, 5) === 'poly=') {
 						const reTx = calSplit[0].replace(/poly=/gi, '');
 						calSplit[0] = reTx;
 						const arrPoly = [];
 
 						for (let i = 0; i < calSplit.length - 3; i += 2) {
-							arrPoly.push({
-								x: (parseInt(calSplit[i]) - offsetX) * offsetX1,
-								y: parseInt((offsetY - calSplit[i + 1]) * offsetY1),
-							});
+							if (!isNaN(parseInt(calSplit[i]))) {
+								arrPoly.push({
+									x: (parseInt(calSplit[i]) - offsetX) * offsetX1,
+									y: parseInt((offsetY - calSplit[i + 1]) * offsetY1),
+								});
+							}
 						}
+
 						setObjectDetection((dt) => [
 							{
-								id: objectDetection.length + 1,
+								id: id,
 								selected: id,
 								polygon: arrPoly,
 							},
@@ -254,6 +273,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 		}
 	}, [props.imageLoading]);
 
+	// Create dropdownlist from motion list
 	const objectList = obj.map((data, i) => {
 		return (
 			<option key={i} value={i}>
@@ -264,7 +284,8 @@ export const PolyFabric = forwardRef((props, ref) => {
 
 	objList.current = objectDetection;
 
-	const send = (object) => {
+	// Convert canvas html to camera
+	const convert = (object) => {
 		let polyList;
 		let offsetX = 86;
 		let offsetX1 = 1152 / 785;
@@ -287,26 +308,36 @@ export const PolyFabric = forwardRef((props, ref) => {
 		return polyList;
 	};
 
+	// Send objectdetection value to camera
 	const apiSend = (sendObject) => {
 		let sendData = '';
 
 		if (sendObject.length === undefined) {
-			sendData += `$noiseadjust=1%0A$postfilter=1%0A$limit=100%0A0,poly=${send(
+			console.log('und');
+			sendData += `$noiseadjust=1%0A$postfilter=1%0A$limit=100%0A0,poly=${convert(
 				sendObject
 			)},s=0,a=5,id=${sendObject.id}`;
 		} else {
 			sendObject.map((data, i) => {
 				if (data.id !== 0) {
 					if (i === 0) {
-						sendData += `$noiseadjust=1%0A$postfilter=1%0A$limit=100%0A0,poly=${send(
+						console.log('if');
+						sendData += `$noiseadjust=1%0A$postfilter=1%0A$limit=100%0A0,poly=${convert(
 							data
-						)},a=5,am=90,s=0,id=${data.id}%0A`;
+						)},a=5,am=90,s=0,id=${data.id}${
+							sendObject.length - 2 !== i ? '%0A' : ''
+						}`;
 					} else {
-						sendData += `0,poly=${send(data)},a=5,am=90,s=0,id=${data.id}%0A`;
+						console.log(sendObject.length - 1, i);
+						console.log('else');
+						sendData += `0,poly=${convert(data)},a=5,am=90,s=0,id=${data.id}${
+							sendObject.length - 2 !== i ? '%0A' : ''
+						}`;
 					}
 				}
 			});
 		}
+		console.log(sendData);
 		const url = `http://${props.cameraIp}/control/control?set&section=eventcontrol&motion_area=${sendData}`;
 		const data = {
 			username: 'admin',
@@ -320,6 +351,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 			});
 	};
 
+	// Make dropdown list
 	const addObjectDetection = () => {
 		if (objectDetection) {
 			const obDetect = () =>
@@ -400,123 +432,156 @@ export const PolyFabric = forwardRef((props, ref) => {
 		}
 	};
 
-	const handleSubmit = useCallback((setPrivacy) => {
-		var canvas = new fabric.Canvas('c');
-		let canvasW = 750;
-		let canvasH = 550;
-		canvas.setWidth(canvasW);
-		canvas.setHeight(canvasH);
+	// Create canvas
+	const handleSubmit = useCallback(
+		(setPrivacy) => {
+			var canvas = new fabric.Canvas('c');
 
-		canvas.on('object:moving', (e) => {
-			var p = e.target;
-			objList.current[p.parentId].polygon[p.id] = {
-				x: p.getCenterPoint().x,
-				y: p.getCenterPoint().y,
-			};
-		});
+			let canvasW = 750;
+			let canvasH = 550;
 
-		canvas.on('mouse:over', (e) => {
-			if (e.target !== null) {
-				if (e.target.id === undefined) {
-					refy.current = e.target.parentId + 1;
-				}
-			}
-		});
+			canvas.setWidth(canvasW);
+			canvas.setHeight(canvasH);
 
-		canvas.on('mouse:out', (e) => {
-			data[0] = 0;
-		});
-
-		canvas.on('selection:created', (e) => {
-			data[0] = 1;
-			selectedItem = {
-				parentId: e.selected[0].parentId,
-				nodeId: e.selected[0].id,
-			};
-		});
-
-		canvas.on('mouse:down', (e) => {
-			let _left = e.pointer.x;
-			let _top = e.pointer.y;
-
-			if (objList.current.length > 1 && data[0] === 0) {
-				const newPolygon = {
-					...objList.current,
-					...objList.current[refy.current - 1].polygon.push({
-						x: _left,
-						y: _top,
-					}),
+			canvas.on('object:moving', (e) => {
+				var p = e.target;
+				objList.current[p.parentId].polygon[p.id] = {
+					x: p.getCenterPoint().x,
+					y: p.getCenterPoint().y,
 				};
-			}
-		});
+			});
 
-		canvas.on('mouse:up', (e) => {
-			if (refy.current > 0) {
-				canvas.clear();
-				node();
-			}
-		});
-
-		fabric.util.addListener(
-			document.getElementsByClassName('upper-canvas')[0],
-			'contextmenu',
-			function (e) {
-				e.preventDefault();
-				if (e.button >= 0) {
-					if (selectedItem.nodeId !== undefined) {
-						objList.current[selectedItem.parentId].polygon.splice(
-							selectedItem.nodeId,
-							1
-						);
-					} else {
-						objList.current.splice(selectedItem.parentId, 1);
+			canvas.on('mouse:over', (e) => {
+				if (e.target !== null) {
+					if (e.target.id === undefined) {
+						refy.current = e.target.parentId + 1;
 					}
+				}
+			});
+
+			canvas.on('mouse:out', (e) => {
+				data[0] = 0;
+			});
+
+			canvas.on('selection:created', (e) => {
+				data[0] = 1;
+				selectedItem = {
+					parentId: e.selected[0].parentId,
+					nodeId: e.selected[0].id,
+				};
+			});
+
+			canvas.on('mouse:down', (e) => {
+				let _left = e.pointer.x;
+				let _top = e.pointer.y;
+				if (isNaN(refy.current)) {
+					refy.current = objList.current.length - 1;
+				}
+
+				if (objList.current.length > 1 && data[0] === 0) {
+					if (
+						objList.current[refy.current - 1] &&
+						objList.current[refy.current - 1].polygon
+					) {
+						objList.current[refy.current - 1].polygon.push({
+							x: _left,
+							y: _top,
+						});
+					}
+				}
+			});
+
+			canvas.on('mouse:up', (e) => {
+				if (refy.current > 0) {
 					canvas.clear();
 					node();
-					data[0] = 0;
 				}
-			}
-		);
-		const node = () => {
-			objList.current.map((dataPoint, a) => {
-				const options = {
-					visible: visibility.current | false,
-					objectCaching: false,
-					fill: '	rgb(255,0,0,0.7)',
-					stroke: 'rgb(255,0,0,0.2)',
-					text: 'ROI',
-					evented: true,
-					hasControls: false,
-					selectable: false,
-					parentId: a,
-				};
-				polygonLine[a] = new fabric.Polyline(dataPoint.polygon, options);
-				canvas.add(polygonLine[a]);
-
-				dataPoint.polygon.map((point, b) => {
-					circle[b] = new fabric.Circle({
-						visible: visibility.current | false,
-						radius: 5,
-						fill: 'white',
-						stroke: 'red',
-						left: point.x,
-						top: point.y,
-						originX: 'center',
-						originY: 'center',
-						hasControls: false,
-						parentId: a,
-						id: b,
-						fireRightClick: true,
-						fireMiddleClick: true,
-						stopContextMenu: true,
-					});
-					canvas.add(circle[b]);
-				});
 			});
-		};
-		node();
-	}, []);
 
+			// Right button delete command
+			fabric.util.addListener(
+				document.getElementsByClassName('upper-canvas')[0],
+				'contextmenu',
+				function (e) {
+					e.preventDefault();
+					if (objList.current.length > 1 && e.button >= 0) {
+						if (selectedItem.nodeId !== undefined) {
+							objList.current[selectedItem.parentId].polygon.splice(
+								selectedItem.nodeId,
+								1
+							);
+						} else {
+							objList.current.splice(selectedItem.parentId, 1);
+						}
+						canvas.clear();
+						node();
+						data[0] = 0;
+					}
+				}
+			);
+
+			// Make polyline, polygon, text,...
+			const node = () => {
+				objList.current.map((dataPoint, a) => {
+					const options = {
+						visible: visibility.current | false,
+						objectCaching: false,
+						fill: '	rgb(255,0,0,0.7)',
+						stroke: 'rgb(255,0,0,0.2)',
+						text: 'ROI',
+						evented: true,
+						hasControls: false,
+						selectable: false,
+						parentId: a,
+					};
+					polygonLine[a] = new fabric.Polyline(dataPoint.polygon, options);
+					canvas.add(polygonLine[a]);
+
+					dataPoint.polygon.map((point, b) => {
+						circle[b] = new fabric.Circle({
+							visible: visibility.current | false,
+							radius: b === 0 ? 10 : 5,
+							fill: 'white',
+							stroke: 'red',
+							left: point.x,
+							top: point.y,
+							originX: 'center',
+							originY: 'center',
+							hasControls: false,
+							parentId: a,
+							id: b,
+							fireRightClick: true,
+							fireMiddleClick: true,
+							stopContextMenu: true,
+						});
+						canvas.add(circle[b]);
+						if (b === 0) {
+							var txt = new fabric.Text(String(objList.current[a].id), {
+								visible: visibility.current | false,
+								fill: 'white',
+								fontSize: 15,
+								stroke: 'red',
+								left: point.x,
+								top: point.y,
+								parentId: a,
+								id: b,
+								hasControls: false,
+								selected: false,
+								originX: 'center',
+								originY: 'center',
+							});
+
+							canvas.add(txt);
+						}
+					});
+				});
+			};
+			node();
+		},
+		[refy.current]
+	);
+
+	// Change canvas layout
 	useEffect(() => {
 		handleSubmit();
 	}, [objectDetection]);
