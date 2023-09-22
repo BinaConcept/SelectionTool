@@ -136,3 +136,7 @@ canvas{
   border: 1px solid transparent;
   color: #5C636A;
 }
+
+.object-number{
+  border:1px solid #DEE2E6 ;
+}

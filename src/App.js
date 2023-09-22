@@ -12,7 +12,6 @@ import { PolyFabric } from './layout/main/polyFabric';
 function App(props, { removeObject }) {
 	const [ip, setIp] = useState('0.0.0.0');
 	const [loaded, setLoaded] = useState(false);
-
 	const childRef = useRef();
 	const camera = () => {
 		return (
@@ -31,19 +30,13 @@ function App(props, { removeObject }) {
 							fill={'black'}
 						></EyesIcone>
 					</Button>
-
-					{/* <Button id="remove" className="btn-secondary p-2">
-						<DeleteIcone width={30} height={30} fill={'black'}></DeleteIcone>
-					</Button> */}
-
 					<img
 						className="view"
-						// src={
-						// 	'http://' +
-						// 	ip +
-						// 	'/control/faststream.jpg?stream=full&quality=40&fps=4.0'
-						// }
-						src={require('../src/dataset/test_data/room1.jpg')}
+						src={
+							'http://' +
+							ip +
+							'/control/faststream.jpg?stream=full&quality=40&fps=4.0'
+						}
 						alt=""
 						onLoad={() => setLoaded(true)}
 						onError={() => setLoaded(false)}

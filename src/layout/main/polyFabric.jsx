@@ -65,9 +65,14 @@ export const PolyFabric = forwardRef((props, ref) => {
 				},
 				...objectDetection,
 			];
+
 			objList.current = newItems;
 			newItems.sort((a, b) => (b.id !== 0 ? a.id - b.id : null));
-			setObjectDetection(newItems);
+
+			// Verplaats de eerste index naar de laatste index met de spread-operator
+			const newArray = [...newItems.slice(1), newItems[0]];
+			console.log('objList: ', newArray);
+			setObjectDetection(newArray);
 			refy.current = objectDetection.length - 1;
 		}
 	};
@@ -382,12 +387,20 @@ export const PolyFabric = forwardRef((props, ref) => {
 
 							<div className="input-group mb-3">
 								{objectDetection.length !== i + 1 ? (
-									<Button
-										className="btn-warning"
-										onClick={() => deleteObject(i)}
-									>
-										-
-									</Button>
+									<>
+										<Button
+											className="btn-warning"
+											onClick={() => deleteObject(i)}
+										>
+											-
+										</Button>
+										<Button
+											className="object-number"
+											onClick={() => (refy.current = i + 1)}
+										>
+											{data.id}
+										</Button>
+									</>
 								) : null}
 								<select
 									className="form-select"
@@ -398,7 +411,6 @@ export const PolyFabric = forwardRef((props, ref) => {
 											? createObject(e.target)
 											: editObject(i, e.target)
 									}
-									onClick={() => (refy.current = i + 1)}
 								>
 									{objectList}
 								</select>
