@@ -532,6 +532,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 
 			// Make polyline, polygon, text,...
 			const node = () => {
+				var txt;
 				objList.current.map((dataPoint, a) => {
 					const options = {
 						visible: visibility.current | false,
@@ -564,9 +565,9 @@ export const PolyFabric = forwardRef((props, ref) => {
 							fireMiddleClick: true,
 							stopContextMenu: true,
 						});
-						canvas.add(circle[b]);
+
 						if (b === 0) {
-							var txt = new fabric.Text(String(objList.current[a].id), {
+							txt = new fabric.Text(String(objList.current[a].id), {
 								visible: visibility.current | false,
 								fill: 'white',
 								fontSize: 15,
@@ -581,7 +582,20 @@ export const PolyFabric = forwardRef((props, ref) => {
 								originY: 'center',
 							});
 
-							canvas.add(txt);
+							var group = new fabric.Group([circle[b], txt], {
+								left: point.x,
+								top: point.y,
+								parentId: a,
+								id: b,
+								hasControls: false,
+								selected: false,
+								originX: 'center',
+								originY: 'center',
+							});
+
+							canvas.add(group);
+						} else {
+							canvas.add(circle[b]);
 						}
 					});
 				});
