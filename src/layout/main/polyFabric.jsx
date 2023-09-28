@@ -15,7 +15,6 @@ import { fabric } from 'fabric';
 import { Button } from '../../atomic/molecules/button';
 import axios from 'axios';
 import adminService from '../../service/adminService';
-import { toast } from 'react-toastify';
 
 export const PolyFabric = forwardRef((props, ref) => {
 	// useState
@@ -26,7 +25,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 	// useRef
 	let visibility = useRef(true);
 	const objList = useRef([]);
-	let refy = useRef(1);
+	let refy = useRef(0);
 
 	// array
 	const data = [0, 0, 0, 0, 0];
@@ -45,10 +44,17 @@ export const PolyFabric = forwardRef((props, ref) => {
 		},
 	]);
 
+	const selectMaxValue = (valData) => {
+		const maxId = valData.reduce((max, currentItem) => {
+			return currentItem.id > max ? currentItem.id : max;
+		}, 0);
+		let indx = valData.findIndex((item) => item.id === maxId);
+		refy.current = valData[indx] + (indx !== 0 ? 1 : 1);
+	};
+
 	// Create objectdetection
 	const createObject = (objData) => {
 		let selectIndx = objData.selectedIndex;
-
 		var answer = window.confirm(
 			`Ben je zeker dat je object wilt toevoegen met de id ${selectIndx}`
 		);
@@ -71,16 +77,20 @@ export const PolyFabric = forwardRef((props, ref) => {
 
 			// Verplaats de eerste index naar de laatste index met de spread-operator
 			const newArray = [...newItems.slice(1), newItems[0]];
-			console.log('objList: ', newArray);
 			setObjectDetection(newArray);
-			refy.current = objectDetection.length - 1;
+			selectMaxValue(newArray);
+			// refy.current = newArray[refy.current].id;
 		}
 	};
 
 	// Delete objectdetection
 	const deleteObject = (index) => {
-		setObjectDetection(objectDetection.filter((item, i) => i !== index));
-		refy.current = refy.current - 1;
+		var filteredArray = objectDetection.filter(function (item, i) {
+			return i !== index;
+		});
+
+		setObjectDetection(filteredArray);
+		selectMaxValue(filteredArray);
 	};
 
 	// Edit objectdetection
@@ -114,11 +124,16 @@ export const PolyFabric = forwardRef((props, ref) => {
 	const hid = () => {
 		let status = display === false ? 'disable' : 'enable';
 		setDisplay(status === 'disable' ? true : false);
-		adminService.getDisplayBlock(props.cameraIp, status).then((response) => {
-			toast.success('Privacy mode');
-			visibility.current = status === 'disable' ? true : false;
-			handleSubmit(visibility);
-		});
+		adminService.getDisplayBlock(props.cameraIp, status);
+		// const response = adminService
+		// 	.getDisplayBlock(props.cameraIp, status)
+		// 	.then((res) => {
+		// 		// console.log('status: ', res.response);
+		// 		// toast.success('Privacy mode');
+		// 		// visibility.current = status === 'disable' ? true : false;
+		// 		// handleSubmit(visibility);
+		// 	});
+		// console.log(response);
 	};
 
 	// Event others component
@@ -129,7 +144,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 		// Toast message
 		store() {
 			adminService.getStore(props.cameraIp).then((response) => {
-				toast.success('Gegevens zijn permanent opgeslagen');
+				// toast.success('Gegevens zijn permanent opgeslagen');
 				hid();
 			});
 		},
@@ -181,12 +196,10 @@ export const PolyFabric = forwardRef((props, ref) => {
 		let offsetY1 = 565 / 941;
 		if (props.imageLoading) {
 			showList(true);
-			adminService
-				.getMotions(props.cameraIp)
-				.then(
-					(res) => createMotionList(res),
-					toast.success('Success verbinding')
-				);
+			adminService.getMotions(props.cameraIp).then(
+				(res) => createMotionList(res)
+				// toast.success('Success verbinding')
+			);
 			adminService.getLoadingCameraData(props.cameraIp).then((res) => {
 				const reTx = res.data.replace(/\n/gi, '');
 				const reTx1 = reTx.replace(/x/gi, ',');
@@ -318,7 +331,6 @@ export const PolyFabric = forwardRef((props, ref) => {
 		let sendData = '';
 
 		if (sendObject.length === undefined) {
-			console.log('und');
 			sendData += `$noiseadjust=1%0A$postfilter=1%0A$limit=100%0A0,poly=${convert(
 				sendObject
 			)},s=0,a=5,id=${sendObject.id}`;
@@ -326,15 +338,12 @@ export const PolyFabric = forwardRef((props, ref) => {
 			sendObject.map((data, i) => {
 				if (data.id !== 0) {
 					if (i === 0) {
-						console.log('if');
 						sendData += `$noiseadjust=1%0A$postfilter=1%0A$limit=100%0A0,poly=${convert(
 							data
 						)},a=5,am=90,s=0,id=${data.id}${
 							sendObject.length - 2 !== i ? '%0A' : ''
 						}`;
 					} else {
-						console.log(sendObject.length - 1, i);
-						console.log('else');
 						sendData += `0,poly=${convert(data)},a=5,am=90,s=0,id=${data.id}${
 							sendObject.length - 2 !== i ? '%0A' : ''
 						}`;
@@ -342,18 +351,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 				}
 			});
 		}
-		console.log(sendData);
-		const url = `http://${props.cameraIp}/control/control?set&section=eventcontrol&motion_area=${sendData}`;
-		const data = {
-			username: 'admin',
-			password: 'meinsm123',
-		};
-		axios
-			.get(url, data)
-			.then((response) => {})
-			.catch((error) => {
-				console.log(error);
-			});
+		adminService.createMotionLine(props.cameraIp, sendData);
 	};
 
 	// Make dropdown list

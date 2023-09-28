@@ -10,7 +10,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import { PolyFabric } from './layout/main/polyFabric';
 function App(props, { removeObject }) {
-	const [ip, setIp] = useState('0.0.0.0');
+	const [ip, setIp] = useState('192.168.0.11');
 	const [loaded, setLoaded] = useState(false);
 	const childRef = useRef();
 	const camera = () => {

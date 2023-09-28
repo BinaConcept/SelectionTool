@@ -1,5 +1,6 @@
 // /* eslint-disable import/no-anonymous-default-export */
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const authorization = {
 	username: 'admin',
@@ -25,21 +26,31 @@ class AdminService {
 			.get(
 				`http://${authorization.username}:${authorization.password}@${ip}/control/control?set&section=eventcontrol&motion_area=${motion}`
 			)
-			.then((response) => {
-				return response;
+			.then((res) => {
+				if (res.status === 200) {
+					toast.success('Detectiezone is met success verzonden.');
+				}
 			})
 			.catch((error) => {
 				console.log(error);
+				toast.warning('Detectiezone is niet aangemaakt.');
 			});
 	}
+
 	// Display mode
 	getDisplayBlock(ip, display) {
-		return axios
+		axios
 			.get(
 				`http://${authorization.username}:${authorization.password}@${ip}/admin/control?set&section=logo&display=${display}`
 			)
+			.then((res) => {
+				if (res.status === 200) {
+					toast.success('Display mode met success veranderd.');
+				}
+			})
 			.catch((error) => {
 				console.log(error);
+				toast.warning('Display mode niet kunnen aanpassen.');
 			});
 	}
 
@@ -54,6 +65,7 @@ class AdminService {
 				console.log(error);
 			});
 	}
+	//Send data to camera
 
 	//Configuration store
 	getLoadingCameraData(ip) {
