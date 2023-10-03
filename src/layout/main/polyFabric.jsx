@@ -44,6 +44,8 @@ export const PolyFabric = forwardRef((props, ref) => {
 		},
 	]);
 
+	objList.current = objectDetection;
+
 	const selectMaxValue = (valData) => {
 		const maxId = valData.reduce((max, currentItem) => {
 			return currentItem.id > max ? currentItem.id : max;
@@ -52,13 +54,33 @@ export const PolyFabric = forwardRef((props, ref) => {
 		refy.current = valData[indx] + (indx !== 0 ? 1 : 1);
 	};
 
+	const createPoly = (data) => {
+		const newItems = [
+			{
+				id:
+					objectDetection.length > 1
+						? objectDetection[objectDetection.length - 2].id + 1
+						: objectDetection[0].id + 1,
+
+				selected: data.selectedIndex,
+				polygon: [],
+			},
+			...objectDetection,
+		];
+		objList.current = newItems;
+		newItems.sort((a, b) => (b.id !== 0 ? a.id - b.id : null));
+
+		// Verplaats de eerste index naar de laatste index met de spread-operator
+		const newArray = [...newItems.slice(1), newItems[0]];
+		setObjectDetection(newArray);
+		selectMaxValue(newArray);
+	};
 	// Create objectdetection
 	const createObject = (objData) => {
-		let selectIndx = objData.selectedIndex;
+		const selectIndx = objData.selectedIndex;
 		var answer = window.confirm(
 			`Ben je zeker dat je object wilt toevoegen met de id ${selectIndx}`
 		);
-
 		if (answer) {
 			const newItems = [
 				{
@@ -66,12 +88,12 @@ export const PolyFabric = forwardRef((props, ref) => {
 						objectDetection.length > 1
 							? objectDetection[objectDetection.length - 2].id + 1
 							: objectDetection[0].id + 1,
-					selected: objData.selectedIndex,
+
+					selected: selectIndx,
 					polygon: [],
 				},
 				...objectDetection,
 			];
-
 			objList.current = newItems;
 			newItems.sort((a, b) => (b.id !== 0 ? a.id - b.id : null));
 
@@ -79,7 +101,6 @@ export const PolyFabric = forwardRef((props, ref) => {
 			const newArray = [...newItems.slice(1), newItems[0]];
 			setObjectDetection(newArray);
 			selectMaxValue(newArray);
-			// refy.current = newArray[refy.current].id;
 		}
 	};
 
@@ -200,13 +221,42 @@ export const PolyFabric = forwardRef((props, ref) => {
 				(res) => createMotionList(res)
 				// toast.success('Success verbinding')
 			);
+
 			adminService.getLoadingCameraData(props.cameraIp).then((res) => {
+				const mobValue = [];
+				const idValue = [];
 				const reTx = res.data.replace(/\n/gi, '');
 				const reTx1 = reTx.replace(/x/gi, ',');
 				const reTx2 = reTx1.replace(/\//gi, ',');
 				const spTx1 = reTx2.split(/%0A/g);
-				let value = spTx1.slice(3, spTx1.length);
 
+				spTx1.map((item, i) => {
+					let x = item.substring(0, 1);
+					if (x === '0') {
+						mobValue.push(item);
+					}
+				});
+
+				function findMissingNumbers(arr) {
+					const missingNumbers = [];
+					const maxGetal = Math.max(...arr.filter(Number.isFinite));
+					const getallenSet = new Set(arr.filter(Number.isFinite));
+
+					for (let i = 1; i <= maxGetal; i++) {
+						let x = i;
+						if (!getallenSet.has(i)) {
+							mobValue.some((item, a) => {
+								if (item.indexOf('id=') === -1) {
+									mobValue[a] = item.slice(0, item.length) + `,id=${i}`;
+									return i === x;
+								}
+							});
+						}
+					}
+				}
+
+				findMissingNumbers(idValue);
+				let value = mobValue;
 				value.map((valData, i) => {
 					let calSplit = valData.slice(2).split(/,/g);
 					let id = calSplit[calSplit.length - 1].replace(/id=/g, '');
@@ -223,10 +273,9 @@ export const PolyFabric = forwardRef((props, ref) => {
 								});
 							}
 						}
-
 						setObjectDetection((dt) => [
 							{
-								id: id,
+								id: i + 1,
 								selected: id,
 								polygon: arrPoly,
 							},
@@ -235,7 +284,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 					} else {
 						setObjectDetection((dt) => [
 							{
-								id: objectDetection.length + 1,
+								id: i + 1,
 								selected: id,
 								polygon: [
 									{
@@ -284,7 +333,6 @@ export const PolyFabric = forwardRef((props, ref) => {
 							},
 							...dt,
 						]);
-						refy.current = i + 1;
 					}
 				});
 			});
@@ -299,8 +347,6 @@ export const PolyFabric = forwardRef((props, ref) => {
 			</option>
 		);
 	});
-
-	objList.current = objectDetection;
 
 	// Convert canvas html to camera
 	const convert = (object) => {
@@ -532,6 +578,11 @@ export const PolyFabric = forwardRef((props, ref) => {
 
 			// Make polyline, polygon, text,...
 			const node = () => {
+				if (objList.current[0].id !== 1) {
+					const newItems = [...objList.current].reverse();
+					const newArray = [...newItems.slice(1), newItems[0]];
+					setObjectDetection(newArray);
+				} 
 				var txt;
 				objList.current.map((dataPoint, a) => {
 					const options = {

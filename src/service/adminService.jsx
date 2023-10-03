@@ -77,6 +77,17 @@ class AdminService {
 				console.log(error);
 			});
 	}
+
+	createVMListIma(ip,id) {
+		return axios
+			.get(
+				`http://${authorization.username}:${authorization.password}@${ip}/control/control?section=event_ima&set_profile=ima:AS&vm_list=${id}`
+			)
+			.catch((error) => {
+				console.log(error);
+			});
+	}
+
 }
 
 // eslint-disable-next-line import/no-anonymous-default-export
