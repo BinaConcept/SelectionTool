@@ -621,7 +621,7 @@ objList.current=objectDetection
 					}
 				}
 			);
-console.log('node',objList.current)
+
 			// Make polyline, polygon, text,...
 			const node = () => {
 				
