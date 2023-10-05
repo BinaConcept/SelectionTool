@@ -124,15 +124,15 @@ export const PolyFabric = forwardRef((props, ref) => {
 		let status = display === false ? 'disable' : 'enable';
 		setDisplay(status === 'disable' ? true : false);
 		adminService.getDisplayBlock(props.cameraIp, status);
-		// const response = adminService
-		// 	.getDisplayBlock(props.cameraIp, status)
-		// 	.then((res) => {
-		// 		// console.log('status: ', res.response);
-		// 		// toast.success('Privacy mode');
-		// 		// visibility.current = status === 'disable' ? true : false;
-		// 		// handleSubmit(visibility);
-		// 	});
-		// console.log(response);
+		const response = adminService
+			.getDisplayBlock(props.cameraIp, status)
+			.then((res) => {
+				console.log('status: ', res.response);
+				// toast.success('Privacy mode');
+				visibility.current = status === 'disable' ? true : false;
+				handleSubmit(visibility);
+			});
+		console.log(response);
 	};
 
 	// Event others component
@@ -213,7 +213,6 @@ export const PolyFabric = forwardRef((props, ref) => {
 				selectList.current.some((select, index) => {
 					return select.some((item, a) => {
 						if (item === id) {
-							console.log('index1:', item, 'object:', index + 1);
 							indexID = index + 1;
 							return true; // Hiermee wordt de lus gestopt zodra een overeenkomst is gevonden
 						}
@@ -275,7 +274,6 @@ export const PolyFabric = forwardRef((props, ref) => {
 							}
 						}
 
-						console.log(arrPoly)
 						setObjectDetection((prevArray) => {
 							const voorlaatsteIndex = prevArray.length - 1;
 							return [
@@ -386,30 +384,25 @@ export const PolyFabric = forwardRef((props, ref) => {
 	const apiSend = (sendObject) => {
 		const list = [];
 
-		console.log('obj', obj);
-		console.log('objectDetection', objectDetection);
 		obj.map((dat, a) => {
 			if (dat.id !== 0) {
 				const selectedOnes = objectDetection.filter(
 					(item) => item.selected === dat.id
 				);
 				const idsOfSelectedOnes = selectedOnes.map((item) => item.id);
-				console.log(idsOfSelectedOnes)
 				list.push (idsOfSelectedOnes)
 			}
 		});
-		console.log('list', list);
 
 		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 		const promises = list.map(async (listItem, i) => {
 			const item = obj.filter((item) => item.id === i + 1);
-			await delay(1000); // Voeg een vertraging van 1 seconde (1000 milliseconden) toe
+			await delay(1000); 
 			return adminService.createVMListIma(
 				props.cameraIp,
 				item[0].key,
 				listItem.join(','),
-				console.log(listItem)
 			);
 		});
 
