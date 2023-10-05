@@ -78,16 +78,27 @@ class AdminService {
 			});
 	}
 
-	createVMListIma(ip,id) {
+	//Get IMA data
+	getLoadingIma(ip) {
 		return axios
 			.get(
-				`http://${authorization.username}:${authorization.password}@${ip}/control/control?section=event_ima&set_profile=ima:AS&vm_list=${id}`
+				`http://${authorization.username}:${authorization.password}@${ip}/control/control?read&section=event_ima&ima`
 			)
 			.catch((error) => {
 				console.log(error);
 			});
 	}
 
+	createVMListIma(ip, ima, id) {
+		return axios
+			.get(
+				`http://${authorization.username}:${authorization.password}@${ip}/control/control?section=event_ima&set_profile=ima:${ima}&vm_list=${id}`,
+				
+			)
+			.catch((error) => {
+				console.log(error);
+			});
+	}
 }
 
 // eslint-disable-next-line import/no-anonymous-default-export

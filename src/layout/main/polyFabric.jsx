@@ -26,6 +26,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 	let visibility = useRef(true);
 	const objList = useRef([]);
 	let refy = useRef(0);
+	let selectList = useRef([]);
 
 	// array
 	const data = [0, 0, 0, 0, 0];
@@ -54,27 +55,6 @@ export const PolyFabric = forwardRef((props, ref) => {
 		refy.current = valData[indx] + (indx !== 0 ? 1 : 1);
 	};
 
-	const createPoly = (data) => {
-		const newItems = [
-			{
-				id:
-					objectDetection.length > 1
-						? objectDetection[objectDetection.length - 2].id + 1
-						: objectDetection[0].id + 1,
-
-				selected: data.selectedIndex,
-				polygon: [],
-			},
-			...objectDetection,
-		];
-		objList.current = newItems;
-		newItems.sort((a, b) => (b.id !== 0 ? a.id - b.id : null));
-
-		// Verplaats de eerste index naar de laatste index met de spread-operator
-		const newArray = [...newItems.slice(1), newItems[0]];
-		setObjectDetection(newArray);
-		selectMaxValue(newArray);
-	};
 	// Create objectdetection
 	const createObject = (objData) => {
 		const selectIndx = objData.selectedIndex;
@@ -189,19 +169,20 @@ export const PolyFabric = forwardRef((props, ref) => {
 		for (let i = 1; i < spTx1.length + 1; i++) {
 			if (spTx1[i - 1].indexOf('_profilename') > -1) {
 				let nuberP = spTx1[i - 1].indexOf('_profilename');
+				let ky = spTx1[i - 1].substring(0, spTx1[i - 1].indexOf(' '));
 				let nuberL = spTx1[i - 1].indexOf('vm_list');
 				let subL = spTx1[i - 1].substring(nuberL + 8);
 				let reL = subL.replace(/\n/g, '');
-
+				let x = subL;
 				setobj((objData) => [
 					...objData,
 					{
-						id: i - 1,
+						id: i,
 						name: spTx1[i - 1].substring(
 							nuberP + 13,
-							spTx1[i - 1].indexOf('ima_dead')
+							spTx1[i - 1].indexOf('ima_dead') - 1
 						),
-						value: parseInt(reL),
+						key: ky,
 					},
 				]);
 			}
@@ -273,66 +254,74 @@ export const PolyFabric = forwardRef((props, ref) => {
 								});
 							}
 						}
-						setObjectDetection((dt) => [
-							{
-								id: i + 1,
-								selected: id,
-								polygon: arrPoly,
-							},
-							...dt,
-						]);
+						setObjectDetection((prevArray) => {
+							const voorlaatsteIndex = prevArray.length - 1;
+							return [
+								...prevArray.slice(0, voorlaatsteIndex),
+								{
+									id: i + 1,
+									selected: parseInt(id),
+									polygon: arrPoly,
+								},
+								...prevArray.slice(voorlaatsteIndex),
+							];
+						});
 					} else {
-						setObjectDetection((dt) => [
-							{
-								id: i + 1,
-								selected: id,
-								polygon: [
-									{
-										x: parseInt((parseInt(calSplit[0]) - offsetX) * offsetX1),
-										y: parseInt(
-											(offsetY -
-												parseInt(
-													parseInt(calSplit[1]) + parseInt(calSplit[3])
-												)) *
-												offsetY1
-										),
-									},
-									{
-										x: parseInt(
-											(parseInt(calSplit[0]) +
-												parseInt(calSplit[2]) -
-												offsetX) *
-												offsetX1
-										),
-										y: parseInt(
-											(offsetY -
-												parseInt(
-													parseInt(calSplit[1]) + parseInt(calSplit[3])
-												)) *
-												offsetY1
-										),
-									},
-									{
-										x: parseInt(
-											(parseInt(calSplit[0]) +
-												parseInt(calSplit[2]) -
-												offsetX) *
-												offsetX1
-										),
-										y: parseInt(
-											(offsetY - parseInt(parseInt(calSplit[1]))) * offsetY1
-										),
-									},
-									{
-										x: parseInt((parseInt(calSplit[0]) - offsetX) * offsetX1),
-										y: parseInt(
-											(offsetY - parseInt(parseInt(calSplit[1]))) * offsetY1
-										),
-									},
-								],
-							},
-							...dt,
-						]);
+						setObjectDetection((prevArray) => {
+							const voorlaatsteIndex = prevArray.length - 1;
+							return [
+								...prevArray.slice(0, voorlaatsteIndex),
+								{
+									id: i + 1,
+									selected: parseInt(id),
+									polygon: [
+										{
+											x: parseInt((parseInt(calSplit[0]) - offsetX) * offsetX1),
+											y: parseInt(
+												(offsetY -
+													parseInt(
+														parseInt(calSplit[1]) + parseInt(calSplit[3])
+													)) *
+													offsetY1
+											),
+										},
+										{
+											x: parseInt(
+												(parseInt(calSplit[0]) +
+													parseInt(calSplit[2]) -
+													offsetX) *
+													offsetX1
+											),
+											y: parseInt(
+												(offsetY -
+													parseInt(
+														parseInt(calSplit[1]) + parseInt(calSplit[3])
+													)) *
+													offsetY1
+											),
+										},
+										{
+											x: parseInt(
+												(parseInt(calSplit[0]) +
+													parseInt(calSplit[2]) -
+													offsetX) *
+													offsetX1
+											),
+											y: parseInt(
+												(offsetY - parseInt(parseInt(calSplit[1]))) * offsetY1
+											),
+										},
+										{
+											x: parseInt((parseInt(calSplit[0]) - offsetX) * offsetX1),
+											y: parseInt(
+												(offsetY - parseInt(parseInt(calSplit[1]))) * offsetY1
+											),
+										},
+									],
+								},
+								...prevArray.slice(voorlaatsteIndex),
+							];
+						});
 					}
 				});
 			});
@@ -371,11 +360,42 @@ export const PolyFabric = forwardRef((props, ref) => {
 
 		return polyList;
 	};
-
 	// Send objectdetection value to camera
 	const apiSend = (sendObject) => {
-		let sendData = '';
+		const list = [];
 
+		obj.map((dat, a) => {
+			if (dat.id !== 0) {
+				const selectedOnes = objectDetection.filter(
+					(item) => item.selected === dat.id
+				);
+				const idsOfSelectedOnes = selectedOnes.map((item) => item.id);
+				list.push(idsOfSelectedOnes);
+			}
+		});
+
+		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+		const promises = list.map(async (listItem, i) => {
+			const item = obj.filter((item) => item.id === i + 1);
+			await delay(1000); // Voeg een vertraging van 1 seconde (1000 milliseconden) toe
+			return adminService.createVMListIma(
+				props.cameraIp,
+				item[0].key,
+				listItem.join(','),
+				console.log(listItem.join(','))
+			);
+		});
+
+		Promise.all(promises)
+			.then((results) => {
+				console.log('Alle beloften zijn voltooid', results);
+			})
+			.catch((error) => {
+				console.error('Fout bij het uitvoeren van beloften', error);
+			});
+
+		let sendData = '';
 		if (sendObject.length === undefined) {
 			sendData += `$noiseadjust=1%0A$postfilter=1%0A$limit=100%0A0,poly=${convert(
 				sendObject
@@ -578,11 +598,6 @@ export const PolyFabric = forwardRef((props, ref) => {
 
 			// Make polyline, polygon, text,...
 			const node = () => {
-				if (objList.current[0].id !== 1) {
-					const newItems = [...objList.current].reverse();
-					const newArray = [...newItems.slice(1), newItems[0]];
-					setObjectDetection(newArray);
-				} 
 				var txt;
 				objList.current.map((dataPoint, a) => {
 					const options = {
