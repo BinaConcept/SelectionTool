@@ -275,7 +275,9 @@ export const PolyFabric = forwardRef((props, ref) => {
 							}
 						}
 
-						console.log(arrPoly)
+						const selectItem = selectList.current.filter(
+							(item) => item[i] === i + 1
+						);
 						setObjectDetection((prevArray) => {
 							const voorlaatsteIndex = prevArray.length - 1;
 							return [
@@ -386,19 +388,15 @@ export const PolyFabric = forwardRef((props, ref) => {
 	const apiSend = (sendObject) => {
 		const list = [];
 
-		console.log('obj', obj);
-		console.log('objectDetection', objectDetection);
 		obj.map((dat, a) => {
 			if (dat.id !== 0) {
 				const selectedOnes = objectDetection.filter(
 					(item) => item.selected === dat.id
 				);
 				const idsOfSelectedOnes = selectedOnes.map((item) => item.id);
-				console.log(idsOfSelectedOnes)
-				list.push (idsOfSelectedOnes)
+				selectList.current = idsOfSelectedOnes;
 			}
 		});
-		console.log('list', list);
 
 		const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -533,7 +531,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 			return obDetect();
 		}
 	};
-objList.current=objectDetection
+
 	// Create canvas
 	const handleSubmit = useCallback(
 		(setPrivacy) => {
@@ -621,10 +619,9 @@ objList.current=objectDetection
 					}
 				}
 			);
-console.log('node',objList.current)
+
 			// Make polyline, polygon, text,...
 			const node = () => {
-				
 				var txt;
 				objList.current.map((dataPoint, a) => {
 					const options = {
