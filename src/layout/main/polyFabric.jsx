@@ -132,7 +132,7 @@ export const PolyFabric = forwardRef((props, ref) => {
 				visibility.current = status === 'disable' ? true : false;
 				handleSubmit(visibility);
 			});
-		console.log(response);
+		console.log('resp:',response);
 	};
 
 	// Event others component
